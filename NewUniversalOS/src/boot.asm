@@ -3,16 +3,21 @@ bits 16 ; We are in 16-bit real mode
 org 0x7c00 ; BIOS loads our bootloader at this address
 
 start:
-    mov si, message ; Point SI to our message
-print_char:
-    lodsb           ; Load byte from [SI] into AL, and increment SI
-    or al, al       ; Check if AL is zero (end of string)
-    jz halt         ; If zero, jump to halt
-    mov ah, 0x0e    ; BIOS teletype output function
-    mov bh, 0       ; Page number
-    mov bl, 0x07    ; White text on black background
+    ; Switch to VGA graphics mode 13h (320x200, 256 colors)
+    mov ah, 0x00    ; Set video mode function
+    mov al, 0x13    ; Mode 13h
     int 0x10        ; Call BIOS video interrupt
-    jmp print_char  ; Loop to print next character
+
+    ; Fill screen with blue (color code 1)
+    mov ax, 0xA000
+    mov es, ax          ; ES points to video memory segment A000h
+    xor di, di          ; DI = 0 (start offset in video memory)
+    mov cx, 320*200     ; Number of pixels (320*200 = 64000 bytes)
+    mov al, 0x01        ; Color blue (palette index 1)
+    rep stosb           ; Fill CX bytes at ES:[DI] with AL, inc DI, dec CX
+
+    ; After filling screen, proceed to enable A20 line and other setup
+    jmp enable_a20
 
 halt:
     cli             ; Clear interrupts
@@ -83,8 +88,6 @@ gdt_descriptor:
     dw gdt_end - gdt_start - 1 ; GDT Limit (size of GDT - 1)
     dd gdt_start               ; GDT Base Address (linear address of gdt_start)
 
-message:
-    db "Hello", 0   ; Null-terminated string
 
 protected_mode_entry:
     bits 32         ; We are now in 32-bit Protected Mode
