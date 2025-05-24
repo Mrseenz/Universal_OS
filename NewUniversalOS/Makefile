@@ -25,7 +25,7 @@ BOOT_BIN = $(BUILD_DIR)/boot.bin
 
 # Kernel source files
 KERNEL_C_SOURCES = $(SRC_DIR)/kernel.c $(SRC_DIR)/interrupts.c $(SRC_DIR)/vga_text.c $(SRC_DIR)/pit.c $(SRC_DIR)/serial.c
-KERNEL_ASM_SOURCES = $(SRC_DIR)/idt.asm
+KERNEL_ASM_SOURCES = $(SRC_DIR)/idt.asm $(SRC_DIR)/graphics.asm
 
 # Kernel object files (derived from sources using patsubst)
 KERNEL_C_OBJS = $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(KERNEL_C_SOURCES))
