@@ -1,0 +1,24 @@
+/* Linker script for the minimal kernel */
+OUTPUT_FORMAT(elf32-i386)
+ENTRY(kmain)
+
+SECTIONS {
+    /* Kernel starts at 1MB */
+    . = 0x100000;
+
+    .text : {
+        *(.text) /* All text sections */
+    }
+
+    .rodata : {
+        *(.rodata*) /* All read-only data sections */
+    }
+
+    .data : {
+        *(.data) /* All data sections */
+    }
+
+    .bss : {
+        *(.bss)  /* All BSS sections (uninitialized data) */
+    }
+}

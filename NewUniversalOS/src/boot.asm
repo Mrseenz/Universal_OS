@@ -98,13 +98,24 @@ protected_mode_entry:
     mov gs, ax
     mov ss, ax
 
-    ; Write 'P' (ASCII 0x50) with white text on blue background (attr 0x1F)
-    ; to the top-left of the screen (video memory at 0xB8000)
-    mov edi, 0xB8000
-    mov word [es:edi], 0x1F50 ; Character 'P', Attribute (Blue background, White foreground)
+    ; Kernel copy routine
+    ; Source: 0x7E00 (where kernel is loaded after bootloader)
+    ; Destination: 0x100000 (where kernel will run)
+    ; Size: 8KB = 8192 bytes = 2048 dwords (double words)
 
-    ; Infinite loop
-    jmp $
+    mov esi, 0x7E00         ; Source address
+    mov edi, 0x100000       ; Destination address
+    mov ecx, 2048           ; Number of dwords to copy (8192 bytes / 4 bytes/dword)
+    
+    cld                     ; Clear direction flag (so LODSD/STOSD increment ESI/EDI)
+
+copy_loop:
+    lodsd                   ; Load dword from [ds:esi] into eax, increment esi
+    stosd                   ; Store dword from eax into [es:edi], increment edi
+    loop copy_loop          ; Decrement ecx, loop if ecx != 0
+
+    ; Jump to the kernel's entry point at 0x100000
+    jmp 0x100000
 
 ; Padding and magic number
 times 510 - ($-$$) db 0 ; Pad remainder of boot sector with 0s
